@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web Chat</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+<style>
+  body {
+    background-color: #f0f2f5;
+  }
+  .chat-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+  }
+  .chat-header {
+    background-color: #075e54;
+    color: #fff;
+    padding: 10px 20px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+  .chat-body {
+    height: 500px;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .message {
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 10px;
+  }
+  .message .image-container {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 10px;
+  }
+  .message .image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .message .message-body {
+    padding: 10px;
+    border-radius: 15px;
+    max-width: 70%;
+  }
+  .message .message-body.user1-message {
+    background-color: #dcf8c6;
+  }
+  .message .message-body.user2-message {
+    background-color: #e2fdff;
+  }
+  .message .message-body .user-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+  }
+  .message .message-body p {
+    margin: 0;
+  }
+  .chat-footer {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    border-top: 1px solid #ddd;
+  }
+  .chat-footer input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 10px;
+    border-radius: 20px;
+    background-color: #f0f2f5;
+    margin-right: 10px;
+  }
+  .chat-footer button {
+    background-color: #075e54;
+    color: #fff;
+    border: none;
+    outline: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  /* Estilos responsivos */
+@media (max-width: 767px) {
+  .chat-container {
+    max-width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .chat-body {
+    height: calc(100vh - 120px);
+  }
+
+  .message .image-container {
+    width: 30px;
+    height: 30px;
+  }
+
+  .message .message-body {
+    max-width: 80%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  .chat-container {
+    max-width: 90%;
+  }
+
+  .chat-body {
+    height: 450px;
+  }
+}
+
+@media (min-width: 992px) {
+  .chat-container {
+    max-width: 800px;
+  }
+
+  .chat-body {
+    height: 500px;
+  }
+}
+
+/* Estilos para iPhone 12 Pro */
+@media (max-width: 390px) {
+  .chat-container {
+    max-width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .chat-body {
+    height: calc(100vh - 120px);
+  }
+
+  .message .image-container {
+    width: 30px;
+    height: 30px;
+  }
+
+  .message .message-body {
+    max-width: 80%;
+  }
+}
+
+/* Estilos para Galaxy S8+ */
+@media (max-width: 360px) {
+  .chat-container {
+    max-width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .chat-body {
+    height: calc(100vh - 120px);
+  }
+
+  .message .image-container {
+    width: 30px;
+    height: 30px;
+  }
+
+  .message .message-body {
+    max-width: 80%;
+  }
+}
+
+
+</style>
+</head>
+<body>
+<div class="chat-container">
+  <div class="chat-header">
+    <h5>Web Chat</h5>
+  </div>
+  <div class="chat-body" id="all-messages">
+    <!-- Messages will be dynamically added here -->
+  </div>
+  <div class="chat-footer">
+    <input type="text" id="message" placeholder="Escribe un mensaje...">
+    <button type="button" id="send-message"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/script.js"></script>
+
+
+</body>
+</html>
