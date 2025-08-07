@@ -11,6 +11,8 @@ const cors = require('cors');
 const { passport } = require('./config/passport');
 const { authRouter } = require('./routes/auth');
 
+
+
 // Cargar variables de entorno
 require('dotenv').config();
 
@@ -46,6 +48,8 @@ app.set('views', path.join(__dirname, 'views'));
 
 // Rutas de autenticación
 app.use('/auth', authRouter);
+
+
 
 // Rutas existentes
 app.use(require('./routes'));

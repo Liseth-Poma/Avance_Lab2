@@ -12,11 +12,35 @@ router.get('/google',
 router.get('/google/callback',
     passport.authenticate('google', { session: false }),
     (req, res) => {
-        // Generar JWT después de autenticación exitosa
-        const token = generateJWT(req.user);
-        
-        // Redirigir al frontend con el token
-        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+        try {
+            if (!req.user) {
+                return res.redirect('/login?error=authentication_failed');
+            }
+
+            // Generar JWT después de autenticación exitosa
+            const token = generateJWT(req.user);
+            
+            // Establecer cookies directamente en el servidor
+            res.cookie('jwt', token, {
+                maxAge: 24 * 60 * 60 * 1000, // 24 horas
+                httpOnly: false, // Permitir acceso desde JavaScript
+                secure: false, // En desarrollo usar false, en producción true
+                sameSite: 'lax'
+            });
+            
+            res.cookie('username', req.user.name || req.user.email, {
+                maxAge: 24 * 60 * 60 * 1000,
+                httpOnly: false,
+                secure: false,
+                sameSite: 'lax'
+            });
+
+            // Redirigir directamente al chat
+            res.redirect('/?auth=success');
+        } catch (error) {
+            console.error('Error en callback de Google:', error);
+            res.redirect('/login?error=callback_error');
+        }
     }
 );
 
@@ -28,8 +52,32 @@ router.get('/github',
 router.get('/github/callback',
     passport.authenticate('github', { session: false }),
     (req, res) => {
-        const token = generateJWT(req.user);
-        res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:3000'}?token=${token}&user=${encodeURIComponent(JSON.stringify(req.user))}`);
+        try {
+            if (!req.user) {
+                return res.redirect('/login?error=authentication_failed');
+            }
+
+            const token = generateJWT(req.user);
+            
+            res.cookie('jwt', token, {
+                maxAge: 24 * 60 * 60 * 1000,
+                httpOnly: false,
+                secure: false,
+                sameSite: 'lax'
+            });
+            
+            res.cookie('username', req.user.name || req.user.email, {
+                maxAge: 24 * 60 * 60 * 1000,
+                httpOnly: false,
+                secure: false,
+                sameSite: 'lax'
+            });
+
+            res.redirect('/?auth=success');
+        } catch (error) {
+            console.error('Error en callback de GitHub:', error);
+            res.redirect('/login?error=callback_error');
+        }
     }
 );
 

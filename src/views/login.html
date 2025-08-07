@@ -265,55 +265,56 @@
     </div>
 
     <script>
-        // Verificar si hay token en la URL (callback de OAuth)
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        const userData = urlParams.get('user');
+        // Verificar si ya está autenticado al cargar la página
+        window.addEventListener('DOMContentLoaded', function() {
+            const jwtCookie = getCookie('jwt');
+            const usernameCookie = getCookie('username');
 
-        if (token && userData) {
-            showLoading();
-            
-            try {
-                // Guardar token y datos de usuario
-                document.cookie = `jwt=${token}; path=/; max-age=${24 * 60 * 60}`; // 24 horas
-                
-                const user = JSON.parse(decodeURIComponent(userData));
-                document.cookie = `username=${user.name || user.email}; path=/; max-age=${24 * 60 * 60}`;
-                
-                showSuccessMessage('¡Inicio de sesión exitoso! Redirigiendo...');
-                
-                // Limpiar URL y redirigir
-                window.history.replaceState({}, document.title, window.location.pathname);
-                
+            if (jwtCookie && usernameCookie) {
+                showSuccessMessage('Ya tienes una sesión activa. Redirigiendo al chat...');
                 setTimeout(() => {
                     window.location.href = '/';
                 }, 1500);
-                
-            } catch (error) {
-                console.error('Error procesando callback OAuth:', error);
-                showErrorMessage('Error al procesar el inicio de sesión. Inténtalo de nuevo.');
-                hideLoading();
+                return;
             }
-        }
 
-        // Verificar si ya está autenticado
-        const jwtCookie = getCookie('jwt');
-        const usernameCookie = getCookie('username');
-
-        if (jwtCookie && usernameCookie) {
-            showSuccessMessage('Ya tienes una sesión activa. Redirigiendo...');
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 1500);
-        }
+            // Verificar parámetros de error en URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            
+            if (error) {
+                let errorMessage = 'Error en el inicio de sesión';
+                
+                switch(error) {
+                    case 'authentication_failed':
+                        errorMessage = 'Error de autenticación. Inténtalo de nuevo.';
+                        break;
+                    case 'callback_error':
+                        errorMessage = 'Error procesando la respuesta del proveedor.';
+                        break;
+                    case 'access_denied':
+                        errorMessage = 'Acceso denegado. Debes autorizar la aplicación.';
+                        break;
+                    default:
+                        errorMessage = 'Error desconocido: ' + decodeURIComponent(error);
+                }
+                
+                showErrorMessage(errorMessage);
+                
+                // Limpiar la URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        });
 
         // Event listeners para los botones OAuth
         document.getElementById('googleLogin').addEventListener('click', function(e) {
             showLoading();
+            // No prevenir el comportamiento por defecto, dejar que la redirección ocurra
         });
 
         document.getElementById('githubLogin').addEventListener('click', function(e) {
             showLoading();
+            // No prevenir el comportamiento por defecto, dejar que la redirección ocurra
         });
 
         // Funciones auxiliares
@@ -338,10 +339,11 @@
             errorEl.textContent = message;
             errorEl.style.display = 'block';
             document.getElementById('successMessage').style.display = 'none';
+            hideLoading();
             
             setTimeout(() => {
                 errorEl.style.display = 'none';
-            }, 5000);
+            }, 8000);
         }
 
         function showSuccessMessage(message) {
@@ -358,15 +360,25 @@
             return null;
         }
 
-        // Manejar errores de OAuth (si vienen como parámetros)
-        const error = urlParams.get('error');
-        if (error) {
-            showErrorMessage('Error en el inicio de sesión: ' + decodeURIComponent(error));
-        }
+        // Verificar estado de autenticación cada pocos segundos
+        setInterval(() => {
+            const jwtCookie = getCookie('jwt');
+            const usernameCookie = getCookie('username');
+            
+            if (jwtCookie && usernameCookie && !document.getElementById('successMessage').style.display.includes('block')) {
+                showSuccessMessage('Sesión detectada. Redirigiendo al chat...');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
+            }
+        }, 2000);
 
         // Animación de entrada
         setTimeout(() => {
-            document.querySelector('.login-container').classList.add('animate__pulse');
+            const container = document.querySelector('.login-container');
+            if (container) {
+                container.classList.add('animate__pulse');
+            }
         }, 1000);
     </script>
 </body>

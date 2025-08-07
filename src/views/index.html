@@ -3,201 +3,605 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Web Chat</title>
+<title>Web Chat - OAuth Enhanced</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 <style>
   body {
-    background-color: #f0f2f5;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   }
+  
   .chat-container {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+    max-width: 900px;
+    margin: 20px auto;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
   }
+  
   .chat-header {
-    background-color: #075e54;
+    background: linear-gradient(135deg, #075e54 0%, #128c7e 100%);
     color: #fff;
-    padding: 10px 20px;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
   }
+  
+  .chat-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="80" r="1" fill="rgba(255,255,255,0.1)"/></svg>');
+  }
+  
+  .chat-header > * {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .chat-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
   .chat-body {
     height: 500px;
     overflow-y: auto;
     padding: 20px;
+    background: #f8f9fa;
   }
+  
+  .chat-body::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .chat-body::-webkit-scrollbar-track {
+    background: #e9ecef;
+    border-radius: 10px;
+  }
+  
+  .chat-body::-webkit-scrollbar-thumb {
+    background: #6c757d;
+    border-radius: 10px;
+  }
+  
+  .chat-body::-webkit-scrollbar-thumb:hover {
+    background: #495057;
+  }
+  
   .message {
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: messageAppear 0.3s ease forwards;
+  }
+  
+  @keyframes messageAppear {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .message-body {
+    padding: 15px 20px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  .message-body:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .message-body.user1-message {
+    background: linear-gradient(135deg, #dcf8c6 0%, #c8e6c9 100%);
+    border-left: 4px solid #4caf50;
+  }
+  
+  .message-body.user2-message {
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    border-right: 4px solid #7bafda;
+  }
+  
+  .username {
+    font-weight: 700;
+    color: #333;
     display: flex;
-    align-items: flex-end;
-    margin-bottom: 10px;
+    align-items: center;
+    gap: 8px;
   }
-  .message .image-container {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin-right: 10px;
-  }
-  .message .image-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .message .message-body {
-    padding: 10px;
-    border-radius: 15px;
-    max-width: 70%;
-  }
-  .message .message-body.user1-message {
-    background-color: #dcf8c6;
-  }
-  .message .message-body.user2-message {
-    background-color: #e2fdff;
-  }
-  .message .message-body .user-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
+  
+  .user-email {
+    font-size: 0.75rem;
     color: #666;
-    margin-bottom: 5px;
+    margin-top: 2px;
   }
-  .message .message-body p {
+  
+  .time {
+    font-size: 0.7rem;
+    color: #888;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .message-text p {
     margin: 0;
+    line-height: 1.5;
+    color: #333;
   }
+  
+  .message-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.3) !important;
+    margin-top: 10px !important;
+    padding-top: 8px !important;
+  }
+  
   .chat-footer {
     display: flex;
     align-items: center;
-    padding: 10px 20px;
-    border-top: 1px solid #ddd;
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+    gap: 15px;
   }
+  
   .chat-footer input {
     flex: 1;
-    border: none;
+    border: 2px solid #e9ecef;
     outline: none;
-    padding: 10px;
-    border-radius: 20px;
-    background-color: #f0f2f5;
-    margin-right: 10px;
+    padding: 12px 20px;
+    border-radius: 25px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    font-size: 14px;
   }
+  
+  .chat-footer input:focus {
+    border-color: #075e54;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(7, 94, 84, 0.1);
+  }
+  
   .chat-footer button {
-    background-color: #075e54;
+    background: linear-gradient(135deg, #075e54 0%, #128c7e 100%);
     color: #fff;
     border: none;
     outline: none;
-    padding: 10px 20px;
-    border-radius: 20px;
+    padding: 12px 20px;
+    border-radius: 25px;
     cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(7, 94, 84, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
-  /* Estilos responsivos */
-@media (max-width: 767px) {
-  .chat-container {
-    max-width: 100%;
-    height: 100vh;
-    border-radius: 0;
+  
+  .chat-footer button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(7, 94, 84, 0.4);
   }
-
-  .chat-body {
-    height: calc(100vh - 120px);
+  
+  .chat-footer button:active {
+    transform: translateY(0);
   }
-
-  .message .image-container {
-    width: 30px;
-    height: 30px;
+  
+  /* User info styles */
+  .user-info {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
-
-  .message .message-body {
-    max-width: 80%;
+  
+  .user-avatar img:hover {
+    transform: scale(1.1) rotate(5deg);
+    transition: all 0.3s ease;
   }
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-  .chat-container {
-    max-width: 90%;
+  
+  /* Badge styles */
+  .badge {
+    font-size: 0.7rem !important;
+    padding: 4px 8px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
   }
-
-  .chat-body {
-    height: 450px;
+  
+  /* Modal enhancements */
+  .modal-content {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
   }
-}
-
-@media (min-width: 992px) {
-  .chat-container {
-    max-width: 800px;
+  
+  .modal-header {
+    background: linear-gradient(135deg, #6ea3db 0%, #8ea4bb 100%);
+    border-bottom: none;
   }
-
-  .chat-body {
-    height: 500px;
+  
+  .profile-avatar-container {
+    animation: float 3s ease-in-out infinite;
   }
-}
-
-/* Estilos para iPhone 12 Pro */
-@media (max-width: 390px) {
-  .chat-container {
-    max-width: 100%;
-    height: 100vh;
-    border-radius: 0;
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
   }
-
-  .chat-body {
-    height: calc(100vh - 120px);
+  
+  .profile-info .row {
+    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 10px;
   }
-
-  .message .image-container {
-    width: 30px;
-    height: 30px;
+  
+  .profile-info .row:hover {
+    background: rgba(0, 123, 255, 0.05);
+    transform: translateX(5px);
   }
-
-  .message .message-body {
-    max-width: 80%;
+  
+  /* Online indicator animation */
+  .online-indicator {
+    animation: pulse-green 2s infinite;
   }
-}
-
-/* Estilos para Galaxy S8+ */
-@media (max-width: 360px) {
-  .chat-container {
-    max-width: 100%;
-    height: 100vh;
-    border-radius: 0;
+  
+  @keyframes pulse-green {
+    0%, 100% { 
+      background-color: #28a745;
+      box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+    }
+    50% { 
+      background-color: #34ce57;
+      box-shadow: 0 0 15px rgba(40, 167, 69, 0.8);
+    }
   }
-
-  .chat-body {
-    height: calc(100vh - 120px);
+  
+  /* Typing indicator */
+  .typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 10px 20px;
+    background: rgba(108, 117, 125, 0.1);
+    border-radius: 20px;
+    margin: 10px 0;
+    animation: fadeIn 0.3s ease;
   }
-
-  .message .image-container {
-    width: 30px;
-    height: 30px;
+  
+  .typing-dots {
+    display: flex;
+    gap: 3px;
   }
-
-  .message .message-body {
-    max-width: 80%;
+  
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #6c757d;
+    animation: typingDot 1.4s infinite ease-in-out;
   }
-}
-
-
+  
+  .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+  .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+  
+  @keyframes typingDot {
+    0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+  }
+  
+  /* Welcome message */
+  .welcome-message {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none !important;
+    border-radius: 15px !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  }
+  
+  .welcome-message .btn-close {
+    filter: brightness(0) invert(1);
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .chat-container {
+      margin: 10px;
+      border-radius: 15px;
+    }
+    
+    .message-body {
+      padding: 12px 15px;
+    }
+    
+    .user-info {
+      flex-direction: column !important;
+      gap: 15px !important;
+      text-align: center;
+    }
+    
+    .user-actions {
+      margin-top: 10px;
+    }
+    
+    .chat-body {
+      height: 400px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .chat-header {
+      padding: 15px;
+    }
+    
+    .chat-body {
+      height: 350px;
+      padding: 15px;
+    }
+    
+    .message-avatar img {
+      width: 35px !important;
+      height: 35px !important;
+    }
+    
+    .message-body {
+      font-size: 0.9rem;
+    }
+    
+    .username {
+      font-size: 0.8rem;
+    }
+    
+    .user-email {
+      font-size: 0.7rem;
+    }
+  }
+  
+  /* Loading states */
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+  }
+  
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Connection status */
+  .connection-status {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .connection-status.connected {
+    background: rgba(40, 167, 69, 0.2);
+    color: #28a745;
+    border: 1px solid rgba(40, 167, 69, 0.3);
+  }
+  
+  .connection-status.disconnected {
+    background: rgba(220, 53, 69, 0.2);
+    color: #dc3545;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    animation: shake 0.5s ease-in-out;
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  
+  /* Enhanced message effects */
+  .message-body::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    border-radius: 22px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+  }
+  
+  .message:hover .message-body::after {
+    opacity: 1;
+  }
+  
+  /* Notification styles */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1050;
+  }
+  
+  .toast {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
 </style>
 </head>
 <body>
 <div class="chat-container">
   <div class="chat-header">
-    <h5>Web Chat</h5>
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <h5 class="chat-title mb-0">
+        <i class="fas fa-comments pulse-animation"></i>
+        Web Chat 
+      </h5>
+      <div class="connection-status connected" id="connectionStatus">
+        <i class="fas fa-wifi me-1"></i>
+        Conectado
+      </div>
+    </div>
   </div>
+  
   <div class="chat-body" id="all-messages">
-    <!-- Messages will be dynamically added here -->
+    <!-- Los mensajes se añadirán dinámicamente aquí -->
+    <div class="text-center text-muted py-4">
+      <div class="mb-3">
+        <i class="fas fa-comments" style="font-size: 3rem; opacity: 0.3;"></i>
+      </div>
+      <p class="mb-0">¡Bienvenido al chat! Envía tu primer mensaje.</p>
+      <small>Los mensajes aparecerán aquí en tiempo real</small>
+    </div>
   </div>
+  
   <div class="chat-footer">
-    <input type="text" id="message" placeholder="Escribe un mensaje...">
-    <button type="button" id="send-message"><i class="fas fa-paper-plane"></i></button>
+    <input type="text" id="message" placeholder="Escribe un mensaje..." maxlength="500">
+    <button type="button" id="send-message">
+      <i class="fas fa-paper-plane"></i>
+      <span>Enviar</span>
+    </button>
   </div>
 </div>
 
+<!-- Toast container for notifications -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Loading overlay -->
+<div class="loading-overlay d-none" id="loadingOverlay">
+  <div class="text-center text-white">
+    <div class="loading-spinner mb-3"></div>
+    <p>Conectando al chat...</p>
+  </div>
+</div>
+
+<!-- Bootstrap JS for modals -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="js/script.js"></script>
 
+<script>
+// Funciones adicionales para mejorar la experiencia
+document.addEventListener('DOMContentLoaded', function() {
+    // Actualizar estado de conexión
+    const connectionStatus = document.getElementById('connectionStatus');
+    
+    // Simular verificación de conexión
+    setInterval(() => {
+        if (navigator.onLine) {
+            connectionStatus.className = 'connection-status connected';
+            connectionStatus.innerHTML = '<i class="fas fa-wifi me-1"></i>Conectado';
+        } else {
+            connectionStatus.className = 'connection-status disconnected';
+            connectionStatus.innerHTML = '<i class="fas fa-wifi-slash me-1"></i>Desconectado';
+        }
+    }, 5000);
+    
+    // Agregar contador de caracteres al input
+    const messageInput = document.getElementById('message');
+    const chatFooter = document.querySelector('.chat-footer');
+    
+    const charCounter = document.createElement('small');
+    charCounter.className = 'text-muted position-absolute';
+    charCounter.style.cssText = 'bottom: -20px; right: 60px; font-size: 0.7rem;';
+    charCounter.textContent = '0/500';
+    
+    chatFooter.style.position = 'relative';
+    chatFooter.appendChild(charCounter);
+    
+    messageInput.addEventListener('input', function() {
+        const length = this.value.length;
+        charCounter.textContent = `${length}/500`;
+        charCounter.style.color = length > 450 ? '#dc3545' : '#6c757d';
+    });
+    
+    // Mejorar el scroll automático
+    const chatBody = document.getElementById('all-messages');
+    const observer = new MutationObserver(() => {
+        chatBody.scrollTo({
+            top: chatBody.scrollHeight,
+            behavior: 'smooth'
+        });
+    });
+    
+    observer.observe(chatBody, { childList: true });
+});
+
+// Función para mostrar notificaciones toast
+function showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toastContainer');
+    const toastId = 'toast-' + Date.now();
+    
+    const toastHtml = `
+        <div class="toast" id="${toastId}" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="4000">
+            <div class="toast-header">
+                <i class="fas fa-${type === 'success' ? 'check-circle text-success' : type === 'error' ? 'exclamation-triangle text-danger' : 'info-circle text-info'} me-2"></i>
+                <strong class="me-auto">Chat</strong>
+                <small class="text-muted">ahora</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+    
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+    
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+    
+    // Remover el toast después de que se oculte
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
+
+// Hacer la función global
+window.showToast = showToast;
+</script>
 
 </body>
 </html>
